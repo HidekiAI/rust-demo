@@ -82,8 +82,6 @@ fn main() {
     // this is by far, the most practical way IMHO to deal with these kinds of problems
     // though, most likely harder to read for developers who's not used to functional programming
     let my_lambda3 = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
-        // nice thing about let method for Option, is that you don't have to write the None case
-
         // Tip: though you can do:
         // return possible_foo.iter().map(|foo| {...
         // by forcing it to a variable, you can check whether you've got the .map() return
@@ -107,10 +105,10 @@ fn main() {
     // output:
     // Result 7: ["foo is valid", "42", "86"]
     // Result 8: ["foo is valid"]
-    // Result 9: ["No data available."]
-    let result7 = my_lambda2(&possible_result); // should list the i32s
-    let result8 = my_lambda2(&empty_result); // should print "foo is valid", but no i32's will be printed
-    let result9 = my_lambda2(&no_result); // should print "No data available."
+    // Result 9: []
+    let result7 = my_lambda3(&possible_result); // should list the i32s
+    let result8 = my_lambda3(&empty_result); // should print "foo is valid", mainly because acc was initialized that way
+    let result9 = my_lambda3(&no_result); // should print empty array (acc is empty)
     println!("Result 7: {:?}", result7);
     println!("Result 8: {:?}", result8);
     println!("Result 9: {:?}", result9);
