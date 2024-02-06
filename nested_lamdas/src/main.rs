@@ -86,7 +86,7 @@ fn main() {
         // return possible_foo.iter().map(|foo| {...
         // by forcing it to a variable, you can check whether you've got the .map() return
         // correctly.  For example, the map() returns as 'Iterator<Vec<String>>' and not 'Vec<String>'
-        let ret  = possible_foo
+        let ret = possible_foo
             .iter() // again, the wonderful Option.iter() method
             .map(|foo| {
                 // if here, we KNOW foo is Some<T>, so make sure we start off with "foo is valid" as our accumulator
@@ -102,6 +102,8 @@ fn main() {
             }); // map
         ret.flatten().collect() // TODO: Investigate why I have to call flatten() here when I just want to .collect()
     };
+    // If the above was made into a single line:
+    let my_lambda3_single_line = |possible_foo: &Option<Vec<i32>>| -> Vec<String> { possible_foo.iter().map(|foo| { foo.iter().fold(vec!["foo is valid".into()], |mut acc, result| { acc.push(format!("{}", result)); acc }) }).flatten().collect() };
     // output:
     // Result 7: ["foo is valid", "42", "86"]
     // Result 8: ["foo is valid"]
