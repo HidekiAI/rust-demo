@@ -22,8 +22,8 @@ fn main() {
     // NOTE: foo is read-only, in functional programming, it's a good practice not pass mutable reference
     let my_lambda = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
         let mut ret: Vec<String> = vec![]; // need to return an instance of string rather than &str
-                                           // this is because Option::iter() (https://doc.rust-lang.org/std/option/enum.Option.html#method.iter)
-                                           // can flatten the Option<T> into 0 or 1 elements
+        // this is because Option::iter() (https://doc.rust-lang.org/std/option/enum.Option.html#method.iter)
+        // can flatten the Option<T> into 0 or 1 elements
         for result1 in possible_foo.iter() {
             // If here, it means possible_foo is Some<T>
             ret.push("foo is valid...".into());
@@ -115,6 +115,36 @@ fn main() {
 }
 ```
 
+As mentioned on first demo, this is probably the most common way a C/C++/C# developers may approach, mainly because we're used to ```switch/case``` statement...
+
+In C++, it may look like:
+
+```cpp
+auto retvec = std::vector<std::string>();
+// Assume possible_foo is a pointer or smartpointer, whatever that presends Option<T> template...
+// Although, if I was doing this, I'd just use std::vector<int> in which
+// I'd check/test if possible_foo is empty or not...
+bool is_some = possible_foo.IsSome();
+switch(is_some) {
+    case true:  // Option<T>::Some case
+    {
+        auto fooList = possible_foo.GetValue();
+        std::for_each(fooList.begin(), fooList.end(), [](foo) {
+            //... setup for converting foo to string, etc...
+            auto fooAsString = std::string(foo);
+            retvec.push_back(fooAsString);
+        })
+    }
+    case false: // Option<T>::None case
+    default:    // same as "_"
+    {
+        ...
+    }
+}
+```
+
+You get the point, probably won't compile, but that is the gist of C++ based using ```switch/case```.  I could probably do it in ```if/else``` block based, but if I was to really do it with least amount of risk in errors, I'd probably use trinary (```bool ? block1 : block1```) approach to be more explicit that there are only 2 paths.  Using both ```switch``` and/or ```if``` based causes the assumptions that there are more than 2 options (i.e. "Some", "None", or "Null" (whatta heck does that mean?!?!?)).
+
 ## Demo 3: map() and fold() method (my favorite)
 
 ```rust
@@ -166,6 +196,53 @@ fn main() {
 }
 ```
 
+Firstly, as a side note, I just want to say that I dislike (maybe more than dislike) reading somebody else's functional programming logic.  I spend more time staring at the comment-less logic with variables ```i``` and ```j``` (I've asked few programmers in the past whether they come from [Fortran](https://en.wikipedia.org/wiki/Fortran#FORTRAN_77) (if you don't know the references of where i, j, and k come from there you go) and they usually ignore my sarcasm, or even heard defense on "lambda calculus") and wonder whatta heck their intentions are.  IMHO when they say that "F" in "F#" is for "Fun(c)" I cringe and wonder...
+
+OK, well, I'm not as smart as they are so maybe it's an envy thing...  But from a regular programmer, I would ask.. whatta heck is:
+
+```lisp
+List a = Empty | Elem a (List a)
+```
+
+- [Linked list](https://rust-unofficial.github.io/too-many-lists/first-layout.html?highlight=Elem#basic-data-layout)
+
+or:
+
+```haskell
+map:: (a -> b) -> [a] -> [b] 
+```
+
+- [map](https://hoogle.haskell.org/?hoogle=map)
+
+and maybe I'll be told to go to YouTube or MSDN Channel9 and watch some Haskell videos :P
+
+In any case, the point is, most functional programming practice is:
+- Write once and if compiler isn't angry (error) or hinting (warn), then you're done
+- You only need to understand your intention at the time you write the logic, because you never have to come back to look at it ever again if all is good
+- You don't write unit-tests, if you quick-tested (i.e. via interpreter terminal window or something) and it gave you result you've expected, that's your quick-test and don't bother checking that in as unit-test because you can assume you'd never touch it again, so unit-test (which validates that somebody changed your logic and your result changed, you expected 5 to always be returned, but it now returns 2, so on) will never happen
+- These functional programmers tends to complain that unit-tests "gets in their way" because because unit-tests used to expect variable my_foo to be ```i32``` but it's now changed to ```&str``` and unit-test is now failing - one thing functional programmers love is using ```_``` to keep types dynamic as well as reusable; for example:
+
+```fsharp
+let sum l r : _ = l + r // NOTE: "_" to implicitly declare result type is unnecessary, it's here just to explain that it's typeless until type is implicitly passed
+
+let result_int = sum 5 3
+let result_float = sum 2.5f 3.3f
+```
+
+Neat feature!  Though in C++, you do ```template <typename T> T sum(T l, T b){}``` and for Rust, you do ```fn sum<T>(l: T, r: T) -> T where T: std::ops::Add<Output=T>,{}```, it's just that it's just easier to comprehend and straight forward in F# (and other functional languages).  I can probably say, it's more ellegant (for this usage) compared to OOP languages...  (If I was to justify why I LOVE Rust, is that it's got a functional programming aspect with performance of significant amount better than F# - see my quick (probably not too accurate nor fair comparision) [rust vs F#](https://github.com/HidekiAI/mandelbrot-fs/blob/main/mandelbrot_Rust-vs-FSharp.png))
+
+I do not wish to give an wrong impression about functional programming (or rather, programmers), for I am convinced that functional programming pattern and aspects help significantly reduce runtime bugs, in which, once you release it to production, you never have to touch it again!
+
+In any case apologies once again for my opinionated rant, but from this demo part, all I'm doing is using ```map()``` and ```fold()``` which are (I think) quite common to see in functional programming libraries.  IMHO, the most ellegant way to solve this kind of problems in which, if the compiler says it's good (no errors, no warnings), you probably can assume it'll run without failure on first time.  I've heard programmers claim "I've spent X days writing this module without running, each day was just fighting and fixing what the compiler complained, but once compilers cleared all errors, it ran the first time..."  and that isn't something a C++/C#/C programmer can believe.  The first thing we'll claim is "I call B.S. on that claim!"
+
+In conclusion, I really think that it's ellegant when I write it, but from others who's looking at the logic, they would probably be complaining how ugly and hard to read my logic is, wondering what my intentions were when I wrote it.  That's the impression I get with functional programs, it's just not meant to be a team-based language in which others have to "suffer" reading your logic to debug.
+
+Again, most functional programmers will claim that once written, we'd never have to look at the logic again, so if I don't have to look at it again, why are you looking at it?  (Answer is simple, I want a job where I can continue to learn from others.)
+
+My suggestion is that if you can get away with writing a complete black-box where majority of the methods are private, and users of that black-box NEVER have to debug INTO your almost-impossible-to-comprehend code, then use functional all you want...
+
+In the meanwhile, all the functional logics I write, I'll keep bragging that it's ellegant :smirk: :stuck_out_tongue:
+
 ## Demo 4: Iterate ```Result<T>```
 
 ```rust
@@ -211,15 +288,58 @@ fn main() {
 }
 ```
 
-## Demo X: xyz
+Lastly, this is similar to ```Option<T>::iter()``` method, in which I'd treat ```Result<T>::iter()``` as either ```Ok``` or ```Err``` as an iteratable list of either 0 or 1 element.  Mainly to express that ONLY when it's ```Ok<T>(result)```, you get to go inside the nest.
+
+Though the sample only presents outer and inner, one can go as deep as one wants as in:
 
 ```rust
-fn main() {
-    let arry1 = vec![42, 86];
-    let arry2 = vec![];
-    let possible_result = Some(arry1); // Yes I know, why do Option<Vec<T>> when you can assume None to mean empty array and Some to mean array of 1 or more...
-    let empty_result: Option<Vec<i32>> = Some(arry2);
-    let no_result: Option<Vec<i32>> = None;
-
+for result1 in do_func1.iter() {
+    for result2 in result1.iter() {
+        ...
+        for result_y in result_x.iter() {
+            ... final result that we really want is here
+        }
+    }
 }
 ```
+
+Each and every line of logic are "used code", and I personally like it better than nested ```if``` blocks (without the ```else```) mainly because there are no room for others to inject an ```else``` statement behind my back to change the flow of how it gets branched off in unexpected directions.
+
+One caveat I can think of is that it will lack error handling, mainly because it just opts out on any place that returns ```Result<T>::Err()```.  But as mentioned elsewhere, if you think of it more like a SQL result "set", where a set is either empty or has one (or more) rows, you then either ```JOIN``` and/or ```SELECT``` more row-sets to it and expect the external "thing" to panic/throw/assert, all you have to worry about is whether it returned final result row-set of one ore more rows, or none (empty set).
+
+And as a bonus, you DO NOT need to check whether the result row-sets were empty or not because of the nature/characterists of ```for-in``` (as well as just plain old ```for()``` and ```std::for_each()``` loop) because if the list is empty, it'll just not go into the inner block logic!
+
+```rust
+
+// using IF checks...
+let result_rowset1 = do_something();
+if result_rowset1.len() > 0 {
+    // iterate next
+    for result2 in result_rowset1 {
+        if result3 = let result2.is_some()  {
+            ... do something
+        }
+        else
+        {
+            ... error handling
+        }
+    }
+}
+else
+{
+    ... some error handling
+}
+
+
+// just use for-in, caveat is no error handling
+for result1 in do_something().iter() {
+    for result2 in result1.iter()
+    {
+        for result3 in result2.iter() {
+            ... do stuff
+        }
+    }
+}
+```
+
+Unless I really need to handle errors (in which case, I'd use ```match``` without using ```_``` so that it's more explicit), I will deal with it the 2nd ways for it is much more cleaner and easier to read (and bugless).  Otherwise, I have now started to obey the YAGTNI rule.
