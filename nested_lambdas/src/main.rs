@@ -46,7 +46,7 @@ fn main() {
     println!("Result 2: {:?}", result2);
     println!("Result 3: {:?}", result3);
 
-    // demo 2: lambda based
+    // demo 2: match based
     // trick here is to use return for each lambdas;
     // in this example, we'll return the accumulated log string
     // NOTE: foo is read-only, in functional programming, it's a good practice not pass mutable reference
