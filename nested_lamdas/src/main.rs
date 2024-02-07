@@ -103,7 +103,19 @@ fn main() {
         ret.flatten().collect() // TODO: Investigate why I have to call flatten() here when I just want to .collect()
     };
     // If the above was made into a single line:
-    let my_lambda3_single_line = |possible_foo: &Option<Vec<i32>>| -> Vec<String> { possible_foo.iter().map(|foo| { foo.iter().fold(vec!["foo is valid".into()], |mut acc, result| { acc.push(format!("{}", result)); acc }) }).flatten().collect() };
+    let my_lambda3_single_line = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
+        possible_foo
+            .iter()
+            .map(|foo| {
+                foo.iter()
+                    .fold(vec!["foo is valid".into()], |mut acc, result| {
+                        acc.push(format!("{}", result));
+                        acc
+                    })
+            })
+            .flatten()
+            .collect()
+    };
     // output:
     // Result 7: ["foo is valid", "42", "86"]
     // Result 8: ["foo is valid"]
@@ -114,4 +126,37 @@ fn main() {
     println!("Result 7: {:?}", result7);
     println!("Result 8: {:?}", result8);
     println!("Result 9: {:?}", result9);
+
+    // OK, one last one...  I was thinking about "result" in general last night and I forgot that
+    // Result<T>.iter() existed...  So going back to for-in-loop:
+    // first, we need to create a separate lambda which will explicitly return Result<T> so that we can
+    // utiize it in for-in-loop.
+    let is_valid =
+        |possible_foo: &Option<Vec<i32>>| -> Result<Vec<i32>, String> {
+            match possible_foo {
+            Some(foo) => Ok(foo.clone()), // clone() because we're returning a new instance of Vec<i32>
+            None => Err("No data available.  In fact, you'll not see this message if Result.iter() is used".into()),   // when Result<T>.iter() is called, Err() WILL BE IGNORED!
+        }
+        };
+    // and then, we can use the is_valid() lambda in the for-in-loop
+    let my_lambda4 = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
+        let mut ret: Vec<String> = vec![];
+        for results in is_valid(possible_foo).iter() {
+            ret.push("foo is valid".into());
+            for result in results {
+                ret.push(format!("{}", result));
+            }
+        }
+        ret
+    };
+    // Output:
+    // Result 10: ["foo is valid", "42", "86"]
+    // Result 11: ["foo is valid"]
+    // Result 12: []
+    let result10 = my_lambda4(&possible_result); // should list the i32s
+    let result11 = my_lambda4(&empty_result); // should print "foo is valid", but no i32's will be printed
+    let result12 = my_lambda4(&no_result); // should print "No data available."
+    println!("Result 10: {:?}", result10);
+    println!("Result 11: {:?}", result11);
+    println!("Result 12: {:?}", result12);
 }
