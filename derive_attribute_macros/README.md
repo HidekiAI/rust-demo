@@ -43,3 +43,144 @@ my_workspace/
 - the "my_macros" is the crate (with its own Cargo.toml) that will declare proc-macro related modules (in mod.rs)
 
 Remember, you *must* declare `proc-macro = true` in Cargo.toml as a crate (per crate).  Per-crate, because if you do not declare `#[proc_macro]` at the "root" level of crates, though you can define multiple `pub fn`s in the same crate, as long as they are all at the "root" of the crate.
+
+## Usage
+
+I think it's more comprehensive if we start with the intents from the user's point of view before we show the logic on the actual derivable procedural macro which will parse and even tell you issues during static analysis and compile time.
+
+```rust
+
+// deriving proc-macro impl
+#[derive(MyProcMacro)]
+struct MyStruct {
+    my_field: u32,
+}
+```
+
+![Static analysis and Compiler error](./missing_struct_field.png)
+
+By deriving `MyProcMacro`, the compiler will complain that you are missing the field `my_var1` in the struct.  The message you will read is actually the constant string which you have added in the proc-macro crate to make your derivable library useful...
+
+You can just follow the missing variable with expected type (`i32` with varname `my_var1`) but the parser will also validate that it is of `i32` type, but if you change it to `f32` or something else, you'll also get an error.
+
+Once again, this is the beauty of compile-time errors and static-analysis as you code rather than during the runtime you'd get a "null exception" because your virtual table is missing something...
+
+## Your useful macros
+
+There are two kinds of proc-macros in this writeup:
+- `MyProcMacro` - this is the derive'able proc-macro in which it'll check/test your struct to make sure it has a variable of expected type and also embed (inherit) a function
+- `make_answer()` - this just inserts a RAW STRING as if, traditionally done in C|C++ macros (well, C compiler, if I remember, replaces embedds macros on first pass and then compiles on 2nd pass as if that macro was actually hand-coded)
+
+### MyProcMacro
+
+```rust
+// Purpose of this macro:
+// verifies that the struct has a field named `my_var1` of type `f32`
+// and then generates a method to halve `my_var1` as `half_my_var1` in which
+// the caller can assume that they will inherit that function without impl it themselves
+#[proc_macro_derive(MyProcMacro)]
+pub fn my_proc_macro_fn(input: TokenStream) -> TokenStream {
+    // Parse the input tokens into a syntax tree
+    let input = parse_macro_input!(input as DeriveInput);
+
+    // Check if the struct has a field named "my_var1" of type "f32"
+    let my_var1_exists = match input.data {
+        syn::Data::Struct(ref data) => data.fields.iter().any(|field| {
+            field
+                .ident
+                .as_ref()
+                .map_or(false, |ident| ident == "my_var1")
+                && matches!(&field.ty, syn::Type::Path(p) if p.path.is_ident("f32"))
+        }),
+        _ => false,
+    };
+
+    if !my_var1_exists {
+        // Emit a helpful compiler error
+        return syn::Error::new_spanned(
+            &input,
+            "Struct must have a field named 'my_var1' of type 'f32'",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    // Ensure that the struct has a field named `my_var1` of type `f32`
+    let my_var1_type = quote! { f32 };
+    let struct_name = &input.ident;
+
+    // Generate the code to halve `my_var1`
+    let expanded = quote! {
+        impl #struct_name {
+            pub fn half_my_var1(&mut self) {
+                self.my_var1 /= 2.0;
+            }
+        }
+    };
+
+    // Hand the output tokens back to the compiler
+    TokenStream::from(expanded)
+}
+```
+
+Just few notes:
+
+- I am using `syn` and `quote` crate, mainly because my life is happier this way
+- the parser will look for expected variable-field with expected type, and if not, it'll display your custom (hopefully meaningful) message to help the user
+- the logic also adds a function `half_my_var()` to your struct (`#struct_name`), in this example, it is a `pub` function, but of course, it can be anything you want.  Nice thing about this method is that I get the compiler to verify for me whether the function I am embedding to your struct is valid syntatctically. (see my example on `make_answer()` macro injector below)
+
+### make_answer
+
+And here's another example that sort of resembles the C|C++ macro:
+
+```rust
+// Example usage:
+//      extern crate proc_macro_examples;
+//      use proc_macro_examples::make_answer;
+//
+//      make_answer!();
+//
+//      fn main() {
+//          println!("{}", answer());
+//      }
+#[proc_macro]
+pub fn make_answer(_item: TokenStream) -> TokenStream {
+    // just like traditional C/C++ macro, a "macro" in this case
+    // will place this string IN PLACE of the macro call as
+    // a function "fn answer()"
+    "fn answer() -> u32 { 42 }".parse().unwrap()
+}
+```
+
+Well, just read the comments...
+
+## Usage
+
+``` rust
+// calling proc-macro directly
+pub(crate) fn do_something() {
+    my_macro1!();
+    // construct a 'fn answer()' function:
+    make_answer!();
+    println!("The answer is: {}", answer());
+
+    // the MyProcMacro should have a method 'half_my_var1' that halves the value of 'my_var1'
+    // first, dump my_var1 to verify its value
+    let mut my_struct = MyStruct {
+        my_field: 42,
+        my_var1: 3.14,
+    };
+    println!("my_var1: {}", my_struct.my_var1);
+    // then, call the method to halve my_var1
+    my_struct.half_my_var1();
+    println!("half_my_var1: {:?}", my_struct.my_var1);
+}
+```
+
+And the output:
+
+``` bash
+The answer is: 42
+my_var1: 3.14
+half_my_var1: 1.57
+```
