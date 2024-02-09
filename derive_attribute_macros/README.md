@@ -152,7 +152,7 @@ pub fn make_answer(_item: TokenStream) -> TokenStream {
 }
 ```
 
-Well, just read the comments...
+Well, just read the comments...  Hint: I'm not using `quote` so if I have typos, I won't know until I finish...
 
 ## Usage
 
