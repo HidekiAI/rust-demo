@@ -1,4 +1,7 @@
 target/
 **/target/
+**/.bak/
+.bak/
+
 **/*.rs.bk
 Cargo.lock

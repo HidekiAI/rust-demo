@@ -1,4 +1,8 @@
 [workspace]
+resolver = "2" # resolver=2 is for 'edition = "2021"'
+# Note that derive_attribute_macros used to have its own Cargo.toml with its own [workspace]
 members = [
     "nested_lambdas",
-    ]
+    "derive_attribute_macros/my_macros",
+    "derive_attribute_macros/my_lib",
+]

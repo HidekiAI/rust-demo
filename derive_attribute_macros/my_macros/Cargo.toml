@@ -1,0 +1,24 @@
+[package]
+name = "my_macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# this is my crate name for others (my_module1) to reference as
+# For example, on the "other" Cargo.toml, you would use:
+# [dependencies]
+# my_macros = { path = "../my_macros" }
+name = "my_macros"
+path = "src/lib.rs"
+proc-macro = true
+# define output to be just proc-macro type (else you get 'cannot mix `proc-macro` crate type with others' error)
+#crate-type = [ "proc-macro"]   # warning: library `my_macros` should only specify `proc-macro = true` instead of setting `crate-type`
+
+[[bin]]
+name = "my_macros_bin"
+path = "src/main.rs"
+required-features = []
+
+[dependencies]
+quote = "1.0.35"
+syn = "2.0.48"
