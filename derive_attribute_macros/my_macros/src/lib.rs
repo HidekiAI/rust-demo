@@ -36,6 +36,9 @@ pub fn my_macro1(_input: TokenStream) -> TokenStream {
 //      }
 #[proc_macro]
 pub fn make_answer(_item: TokenStream) -> TokenStream {
+    // just like traditional C/C++ macro, a "macro" in this case
+    // will place this string IN PLACE of the macro call as 
+    // a function "fn answer()"
     "fn answer() -> u32 { 42 }".parse().unwrap()
 }
 

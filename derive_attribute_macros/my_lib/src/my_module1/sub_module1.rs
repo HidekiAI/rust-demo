@@ -9,5 +9,7 @@ struct MyStruct {
 // calling proc-macro directly
 pub(crate) fn do_something() {
     my_macro1!();
+    // construct a 'fn answer()' function:
     make_answer!();
+    println!("The answer is: {}", answer());
 }   
