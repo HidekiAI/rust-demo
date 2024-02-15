@@ -5,3 +5,8 @@ target/
 
 **/*.rs.bk
 Cargo.lock
+
+# gcc/clang build artifacts
+*.a
+*.o
+*.exe
