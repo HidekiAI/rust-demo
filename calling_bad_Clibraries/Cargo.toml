@@ -2,13 +2,14 @@
 name = "calling_bad_Clibraries"
 version = "0.1.0"
 edition = "2021"
+authors = ["hidekiai@users.noreply.github.com"]
 
 [build-dependencies]
+clang = "2.0.0"
+#llvm = "0.0.1"     # currently, llvm seems to be broken (at least on MinGW)
+cc = "1.0.67"
 bindgen = "0.69.4"
-
-# tell bindgen where to link against (assuming 'build.sh' in the bad_c_libs directory generated there):
-[build]
-rustflags = ["-L", "./bad_clibs"]
 
 [dependencies]
 bindgen = { version = "0.69.4", features = [] }
+cc = "1.0.67"

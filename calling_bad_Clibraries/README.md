@@ -4,7 +4,7 @@ The purpose of this demonstrations are to evaluate and strategize on solutions o
 
 This all started way back when, when I was working on a project in which we had to integrate Lua interpreter within our C++ application.  (Please bare weith me, I know this is Rust, but it will all tie together).
 
-When Lua interpreter has issues, it will try to play nice and call C library method [`exit()`](https://cplusplus.com/reference/cstdlib/exit/).  I am not sure what this means for those who aren't familiar with this scary O/S function, but if a C++ application calls a C (or C++) library in which they call `exit()`, the C++ application will *IMMEDIATELY TERMINATE*!  And to make it worse, O/S call of `exit()` is not even considered `unhandled exception`, hence you will get:
+When Lua interpreter has issues, it will try to play nice and call C library method [`exit()`](https://cplusplus.com/reference/cstdlib/exit/) (see also Rust library `std::process::exit()`).  I am not sure what this means for those who aren't familiar with this scary O/S function, but if a C++ application calls a C (or C++) library in which they call `exit()`, the C++ application will *IMMEDIATELY TERMINATE*!  And to make it worse, O/S call of `exit()` is not even considered `unhandled exception`, hence you will get:
 
 - ALL C++ destructors will not be called
 - ALL temporary files opened will not have the chance to close
@@ -89,3 +89,34 @@ There are few caveats to this.  First is it can only clean up resources that are
 
 And of course, the elephant in the room is the puzzle about whether that C/C++ library that caused seg-fault or `exit()` probably (OK, definitely) did not clean itself up.  I think that is why the nice-kind-smart people at Microsoft for example will try to flush your toilet if you had not done so when the application exits when possible (but not all the time).  Even then, there are times when even the `kill -9 $(pidof my_app)` (in Linux) will not release the darn zombie-threads and zombie-processes.  But well, so much we can do, either we should avoid using such libraries or if it is still being maintained, participate in bug-report and cross your fingers...
 
+The C++ test code will only demonstrate the consequences of `try-catch` block not being to catch it, and not going to demonstrate the forking and joining of threads.
+
+
+
+## Caveats that bit me hard
+
+It took me almost 3/4 of a day to finally figure this out, and I really think (and wish) it should be documented more explicitly...
+
+This project originally was in format like so:
+
+```bash
+.
+├── Cargo.toml
+├── build.rs
+└── src
+    ├── hello.c
+    ├── lib.rs
+    └── main.rs
+
+1 directory, 5 files
+```
+
+In which, I was/am getting constant linker issues complaining that it cannot find the extern C functions that I am trying to call.
+
+And then, I went to [Build Script Examples](https://doc.rust-lang.org/cargo/reference/build-script-examples.html) page for more hints, and spotted that their directory structure *DOES NOT* have `lib.rs`!
+
+It turns out your C-library file *IS* the "lib" (so to speak)...
+
+I'm so used to having both `main.rs` and `lib.rs` mixed that I did not see it as a concern.
+
+All in all, if you were getting linker errors, get rid of your `lib.rs` file! (This is one of the very few things I've disliked about Rust, in which it would have this default `main.rs`, `lib.rs`, `mod.rs`, etc - at first, I was annoyed of fixed filename of `Cargo.toml` but then again, I am used to default filename `Makefile` and `CMakeLists.txt` (case-sensitive))
