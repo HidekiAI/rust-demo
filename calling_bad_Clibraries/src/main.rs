@@ -15,17 +15,26 @@ mod ffi {
 }
 
 fn main() {
-    // Output:
+    // Output (same on both Linux and Windows):
     //      do_proc_exit(0): About to call mid_exit() from C library
     //      mid_exit(): Calling exit() now...
     do_proc_exit();
 
+    // Output (Linux):
+    //      do_div_by_zero(0): About to call mid_divide_by_zero() from C library
+    //      mid_divide_by_zero(): about to divide by zero...
+    //      mid_divide_by_zero(): This WILL print - In C/C++ NaN and INF are valid answer...
+    //      do_div_by_zero(1): mid_divide_by_zero() from C library called successfully
     // Output (Windows):
     //      do_div_by_zero(0): About to call mid_divide_by_zero() from C library
     //      mid_divide_by_zero(): about to divide by zero...
     //      error: process didn't exit successfully: `rust-demo\target\debug\calling_bad_Clibraries.exe` (exit code: 0xc0000094, STATUS_INTEGER_DIVIDE_BY_ZERO)
     do_div_by_zero();
 
+    // Output (Linux):
+    //      do_seg_fault(0): About to call mid_access_violation() from C library
+    //      mid_access_violation(): about to write some value to NULL pointer; seg-fault here we come...
+    //      Segmentation fault (core dumped)
     // Output (Windows):
     //      do_seg_fault(0): About to call mid_access_violation() from C library
     //      mid_access_violation(): about to write some value to NULL pointer; seg-fault here we come...

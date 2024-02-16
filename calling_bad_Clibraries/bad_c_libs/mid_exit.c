@@ -15,7 +15,7 @@ void mid_divide_by_zero()
     int not_a_number = 0; // how do we assign a NaN in C?
     printf("mid_divide_by_zero(): about to divide by zero...\n");
     not_a_number = 1 / 0; // note that at least with clang (not sure of gcc), you will get a warning about division-by-zero
-    if (isnan(not_a_number))
+    if (isnan((float) not_a_number))
     {
         printf("mid_divide_by_zero(): This will print as expected...\n");
     }
