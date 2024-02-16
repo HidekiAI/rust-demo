@@ -16,5 +16,6 @@ path = "src/main.rs"
 required-features = []
 
 [dependencies]
+anyhow = "1.0.79"
 my_macros = { path = "../my_macros" }
 

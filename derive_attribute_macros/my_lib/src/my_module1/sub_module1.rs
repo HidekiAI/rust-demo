@@ -1,5 +1,6 @@
 use my_macros::{make_answer, my_macro1, MyProcMacro};
 
+#[allow(dead_code)]
 // deriving proc-macro impl
 #[derive(MyProcMacro)]
 struct MyStruct {
@@ -8,6 +9,7 @@ struct MyStruct {
 }
 
 // calling proc-macro directly
+#[allow(dead_code)] // though main.rs calls this method, I'm still getting dead_code warning...
 pub(crate) fn do_something() {
     my_macro1!();
     // construct a 'fn answer()' function:
@@ -24,4 +26,15 @@ pub(crate) fn do_something() {
     // then, call the method to halve my_var1
     my_struct.half_my_var1();
     println!("half_my_var1: {:?}", my_struct.my_var1);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_do_something() {
+        do_something();
+        // Add assertions here to verify the expected behavior of the do_something function
+    }
 }

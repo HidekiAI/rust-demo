@@ -20,5 +20,6 @@ path = "src/main.rs"
 required-features = []
 
 [dependencies]
+anyhow = "1.0.79"
 quote = "1.0.35"
 syn = "2.0.48"

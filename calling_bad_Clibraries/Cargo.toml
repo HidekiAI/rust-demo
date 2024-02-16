@@ -11,5 +11,6 @@ cc = "1.0.67"
 bindgen = "0.69.4"
 
 [dependencies]
+anyhow = "1.0.79"
 bindgen = { version = "0.69.4", features = [] }
 cc = "1.0.67"

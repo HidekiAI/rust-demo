@@ -72,7 +72,7 @@ pub fn my_proc_macro_fn(input: TokenStream) -> TokenStream {
     }
 
     // Ensure that the struct has a field named `my_var1` of type `f32`
-    let my_var1_type = quote! { f32 };
+    let _my_var1_type = quote! { f32 };
     let struct_name = &input.ident;
 
     // Generate the code to halve `my_var1`

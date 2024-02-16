@@ -51,7 +51,7 @@ fn main() {
     // in this example, we'll return the accumulated log string
     // NOTE: foo is read-only, in functional programming, it's a good practice not pass mutable reference
     let my_lambda2 = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
-        // I love match statement, in which I can write two lamdas for each condition
+        // I love match statement, in which I can write two lambdas for each condition
         // and in this case, only two condtions of either Some<T> or _ (None)
         let ret = match possible_foo {
             Some(foo) => {
@@ -103,7 +103,7 @@ fn main() {
         ret.flatten().collect() // TODO: Investigate why I have to call flatten() here when I just want to .collect()
     };
     // If the above was made into a single line:
-    let my_lambda3_single_line = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
+    let _my_lambda3_single_line = |possible_foo: &Option<Vec<i32>>| -> Vec<String> {
         possible_foo
             .iter()
             .map(|foo| {

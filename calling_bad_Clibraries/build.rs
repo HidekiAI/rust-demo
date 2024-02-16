@@ -3,10 +3,10 @@ extern crate cc;
 extern crate clang;
 
 use std::env;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::PathBuf;
+//use std::process::Command;
 
-use cc::Build;
+//use cc::Build;
 
 const EXTERN_LIB_FILENAME: &str = "bindings";    // used for lib and rs filename i.e. "bindings.rs" and "libbindings.a"
 
